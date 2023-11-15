@@ -57,6 +57,8 @@ namespace RL.Data.Migrations
                 name: "PlanProcedures",
                 columns: table => new
                 {
+                    PlanProcedureId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     ProcedureId = table.Column<int>(type: "INTEGER", nullable: false),
                     PlanId = table.Column<int>(type: "INTEGER", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -64,7 +66,7 @@ namespace RL.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PlanProcedures", x => new { x.PlanId, x.ProcedureId });
+                    table.PrimaryKey("PK_PlanProcedures", x => x.PlanProcedureId);
                     table.ForeignKey(
                         name: "FK_PlanProcedures_Plans_PlanId",
                         column: x => x.PlanId,
@@ -79,14 +81,54 @@ namespace RL.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserPlanProcedure",
+                columns: table => new
+                {
+                    PlanProcedureId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsDelete = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
+                    CreateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserPlanProcedure", x => new { x.PlanProcedureId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_UserPlanProcedure_PlanProcedures_PlanProcedureId",
+                        column: x => x.PlanProcedureId,
+                        principalTable: "PlanProcedures",
+                        principalColumn: "PlanProcedureId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserPlanProcedure_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlanProcedures_PlanId",
+                table: "PlanProcedures",
+                column: "PlanId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_PlanProcedures_ProcedureId",
                 table: "PlanProcedures",
                 column: "ProcedureId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPlanProcedure_UserId",
+                table: "UserPlanProcedure",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "UserPlanProcedure");
+
             migrationBuilder.DropTable(
                 name: "PlanProcedures");
 
