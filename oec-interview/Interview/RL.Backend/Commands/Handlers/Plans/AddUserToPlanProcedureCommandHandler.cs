@@ -56,7 +56,7 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
                         .ToListAsync(cancellationToken: cancellationToken);
 
                 //mark delete for userIds which are not part of the request
-                deleteUserAssignments?.ForEach(item => item.IsDelete = true);
+                deleteUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
 
                 var nonExistingUserAssignments = userIds.Except(_context.UserPlanProcedure
                                                     .Where(x => x.PlanProcedureId == planProcedureId)
@@ -86,6 +86,7 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
                     if (matchingUserAssignment != null)
                     {
                         matchingUserAssignment.IsDelete = false;
+                        matchingUserAssignment.UpdateDate = DateTime.Now;
                     }
                 }
 
@@ -96,7 +97,7 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
             else
             {
                 //mark delete for userIds which are not part of the request
-                allUserAssignments?.ForEach(item => item.IsDelete = true);
+                allUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
                 userAssignmentUpdated = true;
             }
 
