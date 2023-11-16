@@ -16,12 +16,17 @@ const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     (async () => {
-      var usersAssignments = await getUserAssignments(planProcedureId);
+      var usersAssignments = await getUserAssignments(planProcedureId, signal);
       setSelectedUsers(
         users.filter((u) => usersAssignments.find((ua) => ua.userId === u.value))
       );
     })();
+    return () => {
+      controller.abort();
+    };
   }, [planProcedureId, users]);
 
   return (
