@@ -1,31 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactSelect from "react-select";
+import { addUserToProcedure, getUserAssignments } from "../../../api/api";
 
-const PlanProcedureItem = ({ procedure, users }) => {
-    const [selectedUsers, setSelectedUsers] = useState(null);
+const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
+  const [selectedUsers, setSelectedUsers] = useState(null);
 
-    const handleAssignUserToProcedure = (e) => {
-        setSelectedUsers(e);
-        // TODO: Remove console.log and add missing logic
-        console.log(e);
-    };
+  const handleAssignUserToProcedure = async (e) => {
+    setSelectedUsers(e);
+    let users = [];
+    if (e) {
+      users = e.map((u) => u.value);
+    }
+    await addUserToProcedure(planProcedureId, users);
+    console.log(e, planProcedureId, users);
+  };
 
-    return (
-        <div className="py-2">
-            <div>
-                {procedure.procedureTitle}
-            </div>
+  useEffect(() => {
+    (async () => {
+      var usersAssignments = await getUserAssignments(planProcedureId);
+      setSelectedUsers(
+        users.filter((u) => usersAssignments.find((ua) => ua.userId === u.value))
+      );
+    })();
+  }, [planProcedureId, users]);
 
-            <ReactSelect
-                className="mt-2"
-                placeholder="Select User to Assign"
-                isMulti={true}
-                options={users}
-                value={selectedUsers}
-                onChange={(e) => handleAssignUserToProcedure(e)}
-            />
-        </div>
-    );
+  return (
+    <div className="py-2">
+      <div>{procedure.procedureTitle}</div>
+
+      <ReactSelect
+        className="mt-2"
+        placeholder="Select User to Assign"
+        isMulti={true}
+        options={users}
+        value={selectedUsers}
+        onChange={(e) => handleAssignUserToProcedure(e)}
+      />
+    </div>
+  );
 };
 
 export default PlanProcedureItem;

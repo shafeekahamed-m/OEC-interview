@@ -30,7 +30,8 @@ export const addProcedureToPlan = async (planId, procedureId) => {
 
     if (!response.ok) throw new Error("Failed to create plan");
 
-    return true;
+    const responseData = await response.json();
+    return responseData;
 };
 
 export const getProcedures = async () => {
@@ -64,4 +65,32 @@ export const getUsers = async () => {
     if (!response.ok) throw new Error("Failed to get users");
 
     return await response.json();
+};
+
+export const getUserAssignments = async (planProcedureId) => {
+    const url = `${api_url}/Users/GetUserAssignments?$filter=planProcedureId eq ${planProcedureId} and isDelete eq false`;
+    const response = await fetch(url, {
+        method: "GET",
+    });
+
+    if (!response.ok) throw new Error("Failed to get plan procedures");
+
+    return await response.json();
+};
+
+export const addUserToProcedure = async (planProcedureId, userIds) => {
+    const url = `${api_url}/Users/AddUserToProcedure`;
+    var command = { planProcedureId: planProcedureId, userIds: userIds };
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+    });
+
+    if (!response.ok) throw new Error("Failed to create plan");
+
+    return true;
 };
