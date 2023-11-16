@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
 using RL.Backend.Commands;
 using RL.Backend.Commands.Handlers.Plans;
 using RL.Backend.Models;
@@ -43,7 +44,18 @@ public class PlanController : ControllerBase
     public async Task<IActionResult> AddProcedureToPlan(AddProcedureToPlanCommand command, CancellationToken token)
     {
         var response = await _mediator.Send(command, token);
-
+        if (response.Succeeded)
+        {
+            var newlyAddedPlanProcedure = await GetLatestPlanProcedureId();
+            var newPlanProcedureResponse = new ApiResponse<int> { Value = newlyAddedPlanProcedure };
+            return newPlanProcedureResponse.ToActionResult();
+        }
         return response.ToActionResult();
+    }
+    private async Task<int> GetLatestPlanProcedureId()
+    {
+        var planProcedure = await _context.PlanProcedures.OrderByDescending(x => x.PlanProcedureId).FirstOrDefaultAsync();
+
+        return planProcedure.PlanProcedureId;
     }
 }

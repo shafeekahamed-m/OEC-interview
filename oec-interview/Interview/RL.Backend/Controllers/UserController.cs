@@ -30,10 +30,11 @@ public class UsersController : ControllerBase
         return _context.Users;
     }
 
-    [HttpPost("GetUserAssignments")]
-    public IEnumerable<UserPlanProcedure> GetUserAssignments(AddUserToPlanProcedureCommand command)
+    [HttpGet("GetUserAssignments")]
+    [EnableQuery]
+    public IEnumerable<UserPlanProcedure> GetUserAssignments()
     {
-        return _context.UserPlanProcedure.Where(x => x.PlanProcedureId == command.PlanProcedureId);
+        return _context.UserPlanProcedure;
     }
 
     [HttpPost("AddUserToProcedure")]

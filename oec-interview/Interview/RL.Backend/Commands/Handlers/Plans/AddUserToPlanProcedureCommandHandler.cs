@@ -20,70 +20,88 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
     {
         try
         {
+            List<int> userIds = request.UserIds;
+            int planProcedureId = request.PlanProcedureId;
+            bool userAssignmentUpdated = false;
             //Validate request
-            if (request.PlanProcedureId < 0)
+            if (planProcedureId < 0)
                 return ApiResponse<Unit>.Fail(new BadRequestException("Invalid PlanProcedureId"));
+            if (userIds?.Count > 0)
+            {
+                var existingUserIds = await _context.Users
+                                        .Where(u => userIds.Contains(u.UserId))
+                                        .Select(u => u.UserId)
+                                        .ToListAsync(cancellationToken);
 
-            var planProcedure = await _context.PlanProcedures.FirstOrDefaultAsync(p => p.PlanProcedureId == request.PlanProcedureId, cancellationToken: cancellationToken);
+                var nonExistingUserIds = userIds.Except(existingUserIds).ToList();
+
+                if (nonExistingUserIds.Count > 0)
+                    return ApiResponse<Unit>.Fail(new NotFoundException($"UserId:{string.Join(",", nonExistingUserIds.Select(n => n.ToString()))} not found"));
+            }
+
+            var planProcedure = await _context.PlanProcedures.FirstOrDefaultAsync(p => p.PlanProcedureId == planProcedureId, cancellationToken: cancellationToken);
 
             if (planProcedure is null)
-                return ApiResponse<Unit>.Fail(new NotFoundException($"PlanProcedureId: {request.PlanProcedureId} not found"));
+                return ApiResponse<Unit>.Fail(new NotFoundException($"PlanProcedureId: {planProcedureId} not found"));
 
             var userAssignments = _context.UserPlanProcedure;
-            bool userAssignmentUpdated = false;
+            var allUserAssignments = await _context.UserPlanProcedure
+                        .Where(x => x.PlanProcedureId == planProcedureId)
+                        .ToListAsync(cancellationToken: cancellationToken);
 
-            if (request.UserIds?.Count > 0)
+            if (userIds is not null && userIds?.Count > 0)
             {
-                foreach (var userId in request.UserIds)
-                {
-                    var userExist = await _context.Users.FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken: cancellationToken);
-                    if (userExist is null)
-                        return ApiResponse<Unit>.Fail(new NotFoundException($"UserId:{userId} not found"));
-                    //var userAssignments = await _context.UserPlanProcedure.FirstOrDefaultAsync(p => p.PlanProcedureId == request.PlanProcedureId, cancellationToken: cancellationToken);
+                var deleteUserAssignments = await _context.UserPlanProcedure
+                        .Where(x => x.PlanProcedureId == planProcedureId && !userIds.Any(y => y == x.UserId))
+                        .ToListAsync(cancellationToken: cancellationToken);
 
-                    var userAssignmentExist = await _context.UserPlanProcedure
-                        .FirstOrDefaultAsync(x => x.PlanProcedureId == request.PlanProcedureId && x.UserId == userId, cancellationToken: cancellationToken);
-                    if (userAssignmentExist is null)
+                //mark delete for userIds which are not part of the request
+                deleteUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
+
+                var nonExistingUserAssignments = userIds.Except(_context.UserPlanProcedure
+                                                    .Where(x => x.PlanProcedureId == planProcedureId)
+                                                    .Select(x => x.UserId)
+                                                    .ToList())
+                                                .ToList();
+
+
+                foreach (var item in nonExistingUserAssignments)
+                {
+                    userAssignments.Add(new UserPlanProcedure
                     {
-                        userAssignments.Add(new UserPlanProcedure
-                        {
-                            PlanProcedureId = request.PlanProcedureId,
-                            UserId = userId
-                        });
-                        if(!userAssignmentUpdated) userAssignmentUpdated = true;
+                        PlanProcedureId = planProcedureId,
+                        UserId = item
+                    });
+                }
+
+                var updateExistingUserAssignments = userIds.Except(_context.UserPlanProcedure
+                                                    .Where(x => x.PlanProcedureId == planProcedureId && !x.IsDelete)
+                                                    .Select(x => x.UserId)
+                                                    .ToList())
+                                                .ToList();
+                foreach (var item in updateExistingUserAssignments)
+                {
+                    var matchingUserAssignment = userAssignments.FirstOrDefault(item1 => item1.PlanProcedureId == planProcedureId && item == item1.UserId);
+
+                    if (matchingUserAssignment != null)
+                    {
+                        matchingUserAssignment.IsDelete = false;
+                        matchingUserAssignment.UpdateDate = DateTime.Now;
                     }
                 }
+
+                if (deleteUserAssignments is not null && deleteUserAssignments.Count > 0
+                    || nonExistingUserAssignments is not null && nonExistingUserAssignments.Count > 0
+                    || updateExistingUserAssignments is not null && updateExistingUserAssignments.Count > 0) userAssignmentUpdated = true;
             }
             else
             {
-
+                //mark delete for userIds which are not part of the request
+                allUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
+                userAssignmentUpdated = true;
             }
 
-
-            ////if (request.UserIds?.Count() > 0 && CheckUserExists(_context.Users, request.UserIds))
-            ////    return ApiResponse<Unit>.Fail(new BadRequestException("Invalid UserId"));
-
-            ////var users = await request.UserIds.All(id => _context.Users.Any(user => user.UserId == id));
-            ////var usersExist = request.UserIds.All(id => _context.Users.Any(user => user.UserId == id));
-            //var usersExist = await _context.Users.AllAsync(id => request.UserIds.Any(user => user == id.UserId));
-
-
-            //if (!usersExist)
-            //    return ApiResponse<Unit>.Fail(new NotFoundException($"UserId not found"));
-
-            ////var userPlanProcedures = await _context.UserPlanProcedure.Select(u => u).Where(p => p.PlanProcedureId == request.PlanProcedureId);
-
-            //var check = await _context.UserPlanProcedure.Include(u => u).AllAsync(p => p.PlanProcedureId == request.PlanProcedureId);
-            ////Already has the procedure, so just succeed
-            ////if (plan.PlanProcedures.Any(p => p.ProcedureId == procedure.ProcedureId))
-            ////    return ApiResponse<Unit>.Succeed(new Unit());
-
-            ////plan.PlanProcedures.Add(new PlanProcedure
-            ////{
-            ////    ProcedureId = procedure.ProcedureId
-            ////});
-
-            if(userAssignmentUpdated)
+            if (userAssignmentUpdated)
                 await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<Unit>.Succeed(new Unit());
