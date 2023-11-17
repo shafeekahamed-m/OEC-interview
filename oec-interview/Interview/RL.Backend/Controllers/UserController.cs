@@ -9,7 +9,7 @@ using RL.Data.DataModels;
 namespace RL.Backend.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route(BackendConstants.ControllerRoute)]
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
@@ -30,14 +30,14 @@ public class UsersController : ControllerBase
         return _context.Users;
     }
 
-    [HttpGet("GetUserAssignments")]
+    [HttpGet(BackendConstants.GetUserAssignments)]
     [EnableQuery]
     public IEnumerable<UserPlanProcedure> GetUserAssignments()
     {
         return _context.UserPlanProcedure;
     }
 
-    [HttpPost("AddUserToProcedure")]
+    [HttpPost(BackendConstants.AddUserToProcedure)]
     public async Task<IActionResult> AddUserToProcedure(AddUserToPlanProcedureCommand command, CancellationToken token)
     {
         var response = await _mediator.Send(command, token);

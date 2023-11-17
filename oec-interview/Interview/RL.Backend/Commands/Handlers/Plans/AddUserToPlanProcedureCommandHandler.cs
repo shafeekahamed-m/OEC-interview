@@ -9,10 +9,12 @@ namespace RL.Backend.Commands.Handlers.Plans;
 
 public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPlanProcedureCommand, ApiResponse<Unit>>
 {
+    private readonly ILogger<AddUserToPlanProcedureCommandHandler> _logger;
     private readonly RLContext _context;
 
-    public AddUserToPlanProcedureCommandHandler(RLContext context)
+    public AddUserToPlanProcedureCommandHandler(ILogger<AddUserToPlanProcedureCommandHandler> logger,RLContext context)
     {
+        _logger = logger;
         _context = context;
     }
 
@@ -106,8 +108,19 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
 
             return ApiResponse<Unit>.Succeed(new Unit());
         }
+        catch (BadRequestException ex)
+        {
+            _logger.LogError(ex, "Bad request exception: {Message}", ex.Message);
+            return ApiResponse<Unit>.Fail(new BadRequestException(ex.Message));
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogError(ex, "Not found exception: {Message}", ex.Message);
+            return ApiResponse<Unit>.Fail(new NotFoundException(ex.Message));
+        }
         catch (Exception e)
         {
+            _logger.LogError(e, "An unexpected error occurred: {Message}", e.Message);
             return ApiResponse<Unit>.Fail(e);
         }
     }
