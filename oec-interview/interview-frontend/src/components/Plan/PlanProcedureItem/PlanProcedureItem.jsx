@@ -21,7 +21,7 @@ const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
     (async () => {
       var usersAssignments = await getUserAssignments(planProcedureId, signal);
       setSelectedUsers(
-        users.filter((u) => usersAssignments.find((ua) => ua.userId === u.value))
+        users.filter((u) => usersAssignments?.find((ua) => ua.userId === u.value))
       );
     })();
     return () => {
