@@ -111,8 +111,4 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
             return ApiResponse<Unit>.Fail(e);
         }
     }
-    bool CheckUserExists(DbSet<User> Users, List<int> UserIds)
-    {
-        return UserIds.All(id => Users.Any(user => user.UserId == id));
-    }
 }
