@@ -1,3 +1,5 @@
+import { AddUserToProcedureError, GetPlanProcedures, GetProceduresError, GetUserAssignmentsError, GetUsersError, StartPlanError } from "../constants/ApiConstants";
+
 const api_url = process.env.REACT_APP_API_BASE_URL;
 
 const postHeaders = {
@@ -13,7 +15,7 @@ export const startPlan = async () => {
     body: JSON.stringify({}),
   });
 
-  if (!response.ok) throw new Error("Failed to create plan");
+  if (!response.ok) throw new Error(StartPlanError);
 
   return await response.json();
 };
@@ -27,7 +29,7 @@ export const addProcedureToPlan = async (planId, procedureId) => {
     body: JSON.stringify(command),
   });
 
-  if (!response.ok) throw new Error("Failed to create plan");
+  if (!response.ok) throw new Error(StartPlanError);
 
   const responseData = await response.json();
   return responseData;
@@ -40,7 +42,7 @@ export const getProcedures = async (signal) => {
     signal,
   });
 
-  if (!response.ok) throw new Error("Failed to get procedures");
+  if (!response.ok) throw new Error(GetProceduresError);
 
   return await response.json();
 };
@@ -52,7 +54,7 @@ export const getPlanProcedures = async (planId, signal) => {
     signal,
   });
 
-  if (!response.ok) throw new Error("Failed to get plan procedures");
+  if (!response.ok) throw new Error(GetPlanProcedures);
 
   return await response.json();
 };
@@ -64,7 +66,7 @@ export const getUsers = async (signal) => {
     signal,
   });
 
-  if (!response.ok) throw new Error("Failed to get users");
+  if (!response.ok) throw new Error(GetUsersError);
 
   return await response.json();
 };
@@ -76,7 +78,7 @@ export const getUserAssignments = async (planProcedureId, signal) => {
     signal,
   });
 
-  if (!response.ok) throw new Error("Failed to get plan procedures");
+  if (!response.ok) throw new Error(GetUserAssignmentsError);
 
   return await response.json();
 };
@@ -94,7 +96,7 @@ export const addUserToProcedure = async (planProcedureId, userIds, signal) => {
     signal,
   });
 
-  if (!response.ok) throw new Error("Failed to create plan");
+  if (!response.ok) throw new Error(AddUserToProcedureError);
 
   return true;
 };
