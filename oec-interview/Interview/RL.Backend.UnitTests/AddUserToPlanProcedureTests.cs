@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using RL.Backend.Commands;
 using RL.Backend.Commands.Handlers.Plans;
@@ -14,6 +15,8 @@ namespace RL.Backend.UnitTests;
 [TestClass]
 public class AddUserToPlanProcedureTests
 {
+
+    private readonly ILogger<AddUserToPlanProcedureCommandHandler> _logger;
     [TestMethod]
     [DataRow(-1)]
     //[DataRow(0)]
@@ -22,7 +25,7 @@ public class AddUserToPlanProcedureTests
     {
         //Given
         var context = new Mock<RLContext>();
-        var sut = new AddUserToPlanProcedureCommandHandler(context.Object);
+        var sut = new AddUserToPlanProcedureCommandHandler(_logger, context.Object);
         var request = new AddUserToPlanProcedureCommand()
         {
             PlanProcedureId = procedureId,
@@ -43,7 +46,7 @@ public class AddUserToPlanProcedureTests
     {
         //Given
         var context = new Mock<RLContext>();
-        var sut = new AddUserToPlanProcedureCommandHandler(context.Object);
+        var sut = new AddUserToPlanProcedureCommandHandler(_logger, context.Object);
         var request = new AddUserToPlanProcedureCommand()
         {
             PlanProcedureId = planProcedureId,
@@ -65,7 +68,7 @@ public class AddUserToPlanProcedureTests
     {
         //Given
         var context = DbContextHelper.CreateContext();
-        var sut = new AddUserToPlanProcedureCommandHandler(context);
+        var sut = new AddUserToPlanProcedureCommandHandler(_logger, context);
         var request = new AddUserToPlanProcedureCommand()
         {
             PlanProcedureId = planProcedureId,
@@ -95,7 +98,7 @@ public class AddUserToPlanProcedureTests
     {
         //Given
         var context = DbContextHelper.CreateContext();
-        var sut = new AddUserToPlanProcedureCommandHandler(context);
+        var sut = new AddUserToPlanProcedureCommandHandler(_logger, context);
         var request = new AddUserToPlanProcedureCommand()
         {
             PlanProcedureId = 1,
@@ -123,7 +126,7 @@ public class AddUserToPlanProcedureTests
     {
         //Given
         var context = DbContextHelper.CreateContext();
-        var sut = new AddUserToPlanProcedureCommandHandler(context);
+        var sut = new AddUserToPlanProcedureCommandHandler(_logger, context);
         var request = new AddUserToPlanProcedureCommand()
         {
             PlanProcedureId = planProcedureId,
