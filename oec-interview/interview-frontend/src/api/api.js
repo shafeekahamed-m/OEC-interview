@@ -1,4 +1,4 @@
-const api_url = "http://localhost:10010";
+const api_url = process.env.REACT_APP_API_BASE_URL;
 
 export const startPlan = async () => {
   const url = `${api_url}/Plan`;
