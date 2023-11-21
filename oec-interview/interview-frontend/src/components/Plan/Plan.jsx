@@ -18,12 +18,12 @@ const Plan = () => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+    // const controller = new AbortController();
+    // const signal = controller.signal;
     (async () => {
-      var procedures = await getProcedures(signal);
-      var planProcedures = await getPlanProcedures(id, signal);
-      var users = await getUsers(signal);
+      var procedures = await getProcedures();
+      var planProcedures = await getPlanProcedures(id);
+      var users = await getUsers();
 
       var userOptions = [];
       users.map((u) => userOptions.push({ label: u.name, value: u.userId }));
@@ -32,10 +32,10 @@ const Plan = () => {
       setProcedures(procedures);
       setPlanProcedures(planProcedures);
     })();
-    return () => {
-      // cancel the request before component unmounts
-      controller.abort();
-    };
+    // return () => {
+    //   // cancel the request before component unmounts
+    //   controller.abort();
+    // };
   }, [id]);
 
   const handleAddProcedureToPlan = async (procedure) => {

@@ -33,22 +33,22 @@ const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
   };
 
   useEffect(() => {
-    //used to cancel the current request in the event of component unload
-    const controller = new AbortController();
-    const signal = controller.signal;
+    // //used to cancel the current request in the event of component unload
+    // const controller = new AbortController();
+    // const signal = controller.signal;
     (async () => {
       //get user assignments for the planProcedureId and set the state
-      var usersAssignments = await getUserAssignments(planProcedureId, signal);
+      var usersAssignments = await getUserAssignments(planProcedureId);
       setSelectedUsers(
         users.filter((u) =>
           usersAssignments?.find((ua) => ua.userId === u.value)
         )
       );
     })();
-    //useeffect cleanup to cancel the current request
-    return () => {
-      controller.abort();
-    };
+    // //useeffect cleanup to cancel the current request
+    // return () => {
+    //   controller.abort();
+    // };
   }, [planProcedureId, users]);
 
   return (
