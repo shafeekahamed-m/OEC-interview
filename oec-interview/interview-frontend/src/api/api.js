@@ -1,6 +1,6 @@
 import { AddUserToProcedureError, GetPlanProcedures, GetProceduresError, GetUserAssignmentsError, GetUsersError, StartPlanError } from "../constants/ApiConstants";
 
-const api_url = process.env.REACT_APP_API_BASE_URL;
+const api_url = "http://localhost:10010";
 
 const postHeaders = {
   Accept: "application/json",
