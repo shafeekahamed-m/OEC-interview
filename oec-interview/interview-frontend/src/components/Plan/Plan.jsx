@@ -12,22 +12,18 @@ import PlanProcedureItem from "./PlanProcedureItem/PlanProcedureItem";
 
 const Plan = () => {
   let { id } = useParams();
+  id = parseInt(id);
   const [procedures, setProcedures] = useState([]);
   const [planProcedures, setPlanProcedures] = useState([]);
   const [users, setUsers] = useState([]);
-  // const [data, setData] = useState({
-  //   procedures: [],
-  //   planProcedures: [],
-  //   users: [],
-  // });
 
   useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+    // const controller = new AbortController();
+    // const signal = controller.signal;
     (async () => {
-      var procedures = await getProcedures(signal);
-      var planProcedures = await getPlanProcedures(id, signal);
-      var users = await getUsers(signal);
+      var procedures = await getProcedures();
+      var planProcedures = await getPlanProcedures(id);
+      var users = await getUsers();
 
       var userOptions = [];
       users.map((u) => userOptions.push({ label: u.name, value: u.userId }));
@@ -35,12 +31,11 @@ const Plan = () => {
       setUsers(userOptions);
       setProcedures(procedures);
       setPlanProcedures(planProcedures);
-      // setData({procedures, planProcedures, users});
     })();
-    return () => {
-      // cancel the request before component unmounts
-      controller.abort();
-    };
+    // return () => {
+    //   // cancel the request before component unmounts
+    //   controller.abort();
+    // };
   }, [id]);
 
   const handleAddProcedureToPlan = async (procedure) => {
@@ -63,6 +58,7 @@ const Plan = () => {
             procedureId: procedure.procedureId,
             procedureTitle: procedure.procedureTitle,
           },
+          //once we add the procedure to a plan set the planProcedureId returned from the api
           planProcedureId: addedPlanProcedureId,
         },
       ];
