@@ -10,26 +10,34 @@ const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
   const [selectedUsers, setSelectedUsers] = useState(null);
 
   const handleAssignUserToProcedure = async (e) => {
+    //first set the state with the selected data
     setSelectedUsers(e);
+    //add the selected users to the below list
     let users = [];
     if (e) {
       users = e.map((u) => u.value);
     }
     if (users && selectedUsers) {
+      //get the function which needs to be called
+      //eg. if the selected count is x , the current possibilities are x+1,x-1 or x-x which is clearing the field
+      //for cases x-1 and x-x call remove
+      //for x+1 cases call add
       const userActionApiCall =
         users.length < selectedUsers.length
           ? removeUserFromProcedure
           : addUserToProcedure;
+      //call the api
       await userActionApiCall(planProcedureId, users);
     }
-
     console.log(e, planProcedureId, users);
   };
 
   useEffect(() => {
+    //used to cancel the current request in the event of component unload
     const controller = new AbortController();
     const signal = controller.signal;
     (async () => {
+      //get user assignments for the planProcedureId and set the state
       var usersAssignments = await getUserAssignments(planProcedureId, signal);
       setSelectedUsers(
         users.filter((u) =>
@@ -37,6 +45,7 @@ const PlanProcedureItem = ({ procedure, users, planProcedureId }) => {
         )
       );
     })();
+    //useeffect cleanup to cancel the current request
     return () => {
       controller.abort();
     };

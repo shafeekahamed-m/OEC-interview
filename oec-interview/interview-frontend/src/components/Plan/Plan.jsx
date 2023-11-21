@@ -16,11 +16,6 @@ const Plan = () => {
   const [procedures, setProcedures] = useState([]);
   const [planProcedures, setPlanProcedures] = useState([]);
   const [users, setUsers] = useState([]);
-  // const [data, setData] = useState({
-  //   procedures: [],
-  //   planProcedures: [],
-  //   users: [],
-  // });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,7 +31,6 @@ const Plan = () => {
       setUsers(userOptions);
       setProcedures(procedures);
       setPlanProcedures(planProcedures);
-      // setData({procedures, planProcedures, users});
     })();
     return () => {
       // cancel the request before component unmounts
@@ -64,6 +58,7 @@ const Plan = () => {
             procedureId: procedure.procedureId,
             procedureTitle: procedure.procedureTitle,
           },
+          //once we add the procedure to a plan set the planProcedureId returned from the api
           planProcedureId: addedPlanProcedureId,
         },
       ];
