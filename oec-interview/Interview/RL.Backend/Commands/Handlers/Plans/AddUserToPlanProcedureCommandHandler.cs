@@ -25,48 +25,37 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
             List<int> userIds = request.UserIds;
             int planProcedureId = request.PlanProcedureId;
             bool userAssignmentUpdated = false;
-            //Validate request
-            if (planProcedureId < 0)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid PlanProcedureId"));
-            if (userIds?.Count > 0)
+            UserPlanProcedureCommandValidation userPlanProcedureCommandValidation = new(_context);
+
+            // Validate PlanProcedureId
+            var planProcedureValidationResult = await userPlanProcedureCommandValidation.ValidatePlanProcedureIdAsync(planProcedureId, cancellationToken);
+            if (!planProcedureValidationResult.Succeeded)
             {
-                var existingUserIds = await _context.Users
-                                        .Where(u => userIds.Contains(u.UserId))
-                                        .Select(u => u.UserId)
-                                        .ToListAsync(cancellationToken);
-
-                var nonExistingUserIds = userIds.Except(existingUserIds).ToList();
-
-                if (nonExistingUserIds.Count > 0)
-                    return ApiResponse<Unit>.Fail(new NotFoundException($"UserId:{string.Join(",", nonExistingUserIds.Select(n => n.ToString()))} not found"));
+                return planProcedureValidationResult;
             }
 
-            var planProcedure = await _context.PlanProcedures.FirstOrDefaultAsync(p => p.PlanProcedureId == planProcedureId, cancellationToken: cancellationToken);
+            // Validate UserIds
+            var userIdsValidationResult = await userPlanProcedureCommandValidation.ValidateUserIdsAsync(userIds, cancellationToken);
+            if (!userIdsValidationResult.Succeeded)
+            {
+                return userIdsValidationResult;
+            }
 
-            if (planProcedure is null)
-                return ApiResponse<Unit>.Fail(new NotFoundException($"PlanProcedureId: {planProcedureId} not found"));
 
-            var userAssignments = _context.UserPlanProcedure;
-            var allUserAssignments = await _context.UserPlanProcedure
-                        .Where(x => x.PlanProcedureId == planProcedureId)
-                        .ToListAsync(cancellationToken: cancellationToken);
-
+            //if there are valid userIds present in the request
             if (userIds is not null && userIds?.Count > 0)
             {
-                var deleteUserAssignments = await _context.UserPlanProcedure
-                        .Where(x => x.PlanProcedureId == planProcedureId && !userIds.Any(y => y == x.UserId))
-                        .ToListAsync(cancellationToken: cancellationToken);
+                //get all the userassignments to update/insert into the context
+                var userAssignments = _context.UserPlanProcedure;
 
-                //mark delete for userIds which are not part of the request
-                deleteUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
-
+                //get list of all userIds which are not matching the planProcedureId(to insert) using the request
                 var nonExistingUserAssignments = userIds.Except(_context.UserPlanProcedure
                                                     .Where(x => x.PlanProcedureId == planProcedureId)
                                                     .Select(x => x.UserId)
                                                     .ToList())
                                                 .ToList();
 
-
+                //insert the data to the context based on nonExistingUserAssignments
                 foreach (var item in nonExistingUserAssignments)
                 {
                     userAssignments.Add(new UserPlanProcedure
@@ -76,13 +65,17 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
                     });
                 }
 
+                //get list of all userIds which are matching the planProcedureId(to update) using the request
                 var updateExistingUserAssignments = userIds.Except(_context.UserPlanProcedure
                                                     .Where(x => x.PlanProcedureId == planProcedureId && !x.IsDelete)
                                                     .Select(x => x.UserId)
                                                     .ToList())
                                                 .ToList();
+
+                //update the soft delete flag to false and update the lastupdated date
                 foreach (var item in updateExistingUserAssignments)
                 {
+                    //get the object matching the userId and planProcedureId
                     var matchingUserAssignment = userAssignments.FirstOrDefault(item1 => item1.PlanProcedureId == planProcedureId && item == item1.UserId);
 
                     if (matchingUserAssignment != null)
@@ -92,20 +85,16 @@ public class AddUserToPlanProcedureCommandHandler : IRequestHandler<AddUserToPla
                     }
                 }
 
-                if (deleteUserAssignments is not null && deleteUserAssignments.Count > 0
-                    || nonExistingUserAssignments is not null && nonExistingUserAssignments.Count > 0
+                //use this flag to check if the context need to updated
+                if (nonExistingUserAssignments is not null && nonExistingUserAssignments.Count > 0
                     || updateExistingUserAssignments is not null && updateExistingUserAssignments.Count > 0) userAssignmentUpdated = true;
             }
-            else
-            {
-                //mark delete for userIds which are not part of the request
-                allUserAssignments?.ForEach(item => { item.IsDelete = true; item.UpdateDate = DateTime.Now; });
-                userAssignmentUpdated = true;
-            }
-
+            
+            //update context based on the flag
             if (userAssignmentUpdated)
                 await _context.SaveChangesAsync(cancellationToken);
 
+            //return success
             return ApiResponse<Unit>.Succeed(new Unit());
         }
         catch (BadRequestException ex)

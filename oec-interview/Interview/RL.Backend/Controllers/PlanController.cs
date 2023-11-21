@@ -44,6 +44,7 @@ public class PlanController : ControllerBase
     public async Task<IActionResult> AddProcedureToPlan(AddProcedureToPlanCommand command, CancellationToken token)
     {
         var response = await _mediator.Send(command, token);
+        //added the below to return the PlanProcedureId on successful addition of a Procedure to a plan
         if (response.Succeeded)
         {
             var newlyAddedPlanProcedure = await GetLatestPlanProcedureId();
@@ -52,6 +53,7 @@ public class PlanController : ControllerBase
         }
         return response.ToActionResult();
     }
+    //This method is used to fetch the PlanProcedureId once added
     private async Task<int> GetLatestPlanProcedureId()
     {
         var planProcedure = await _context.PlanProcedures.OrderByDescending(x => x.PlanProcedureId).FirstOrDefaultAsync();
