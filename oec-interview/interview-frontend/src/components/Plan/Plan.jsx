@@ -12,6 +12,7 @@ import PlanProcedureItem from "./PlanProcedureItem/PlanProcedureItem";
 
 const Plan = () => {
   let { id } = useParams();
+  id = parseInt(id);
   const [procedures, setProcedures] = useState([]);
   const [planProcedures, setPlanProcedures] = useState([]);
   const [users, setUsers] = useState([]);

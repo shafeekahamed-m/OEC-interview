@@ -100,3 +100,21 @@ export const addUserToProcedure = async (planProcedureId, userIds, signal) => {
 
   return true;
 };
+
+export const removeUserFromProcedure = async (planProcedureId, userIds, signal) => {
+  const url = `${api_url}/Users/RemoveUserFromProcedure`;
+  var command = {
+    planProcedureId: planProcedureId,
+    userIds: userIds,
+  };
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: postHeaders,
+    body: JSON.stringify(command),
+    signal,
+  });
+
+  if (!response.ok) throw new Error(AddUserToProcedureError);
+
+  return true;
+};
