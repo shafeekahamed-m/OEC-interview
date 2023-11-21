@@ -1,4 +1,11 @@
-import { AddUserToProcedureError, GetPlanProcedures, GetProceduresError, GetUserAssignmentsError, GetUsersError, StartPlanError } from "../constants/ApiConstants";
+import {
+  AddUserToProcedureError,
+  GetPlanProcedures,
+  GetProceduresError,
+  GetUserAssignmentsError,
+  GetUsersError,
+  StartPlanError,
+} from "../constants/ApiConstants";
 
 const api_url = "http://localhost:10010";
 
@@ -35,7 +42,7 @@ export const addProcedureToPlan = async (planId, procedureId) => {
   return responseData;
 };
 
-export const getProcedures = async (signal) => {
+export const getProcedures = async (signal = null) => {
   const url = `${api_url}/Procedures`;
   const response = await fetch(url, {
     method: "GET",
@@ -47,7 +54,7 @@ export const getProcedures = async (signal) => {
   return await response.json();
 };
 
-export const getPlanProcedures = async (planId, signal) => {
+export const getPlanProcedures = async (planId, signal = null) => {
   const url = `${api_url}/PlanProcedure?$filter=planId eq ${planId}&$expand=procedure`;
   const response = await fetch(url, {
     method: "GET",
@@ -59,7 +66,7 @@ export const getPlanProcedures = async (planId, signal) => {
   return await response.json();
 };
 
-export const getUsers = async (signal) => {
+export const getUsers = async (signal = null) => {
   const url = `${api_url}/Users`;
   const response = await fetch(url, {
     method: "GET",
@@ -71,7 +78,7 @@ export const getUsers = async (signal) => {
   return await response.json();
 };
 
-export const getUserAssignments = async (planProcedureId, signal) => {
+export const getUserAssignments = async (planProcedureId, signal = null) => {
   const url = `${api_url}/Users/GetUserAssignments?$filter=planProcedureId eq ${planProcedureId} and isDelete eq false`;
   const response = await fetch(url, {
     method: "GET",
@@ -83,7 +90,11 @@ export const getUserAssignments = async (planProcedureId, signal) => {
   return await response.json();
 };
 
-export const addUserToProcedure = async (planProcedureId, userIds, signal) => {
+export const addUserToProcedure = async (
+  planProcedureId,
+  userIds,
+  signal = null
+) => {
   const url = `${api_url}/Users/AddUserToProcedure`;
   var command = {
     planProcedureId: planProcedureId,
@@ -101,7 +112,11 @@ export const addUserToProcedure = async (planProcedureId, userIds, signal) => {
   return true;
 };
 
-export const removeUserFromProcedure = async (planProcedureId, userIds, signal) => {
+export const removeUserFromProcedure = async (
+  planProcedureId,
+  userIds,
+  signal = null
+) => {
   const url = `${api_url}/Users/RemoveUserFromProcedure`;
   var command = {
     planProcedureId: planProcedureId,
